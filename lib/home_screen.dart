@@ -1,6 +1,7 @@
 // home_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:smartwatermeteringsystemapp/TokenShareSection.dart';
 import 'AboutSection.dart';
 import 'HomeSection.dart';
 import 'ReportsSection.dart';
@@ -29,6 +30,8 @@ class _HomeScreenState extends State<HomeScreen> {
           return AboutSection();
         case 'Token Recharge':
           return TokenRechargeSection();
+        case 'Token Share':
+          return TokenShareSection();
         default:
           return HomeSection();
       }
@@ -77,6 +80,15 @@ class _HomeScreenState extends State<HomeScreen> {
               onTap: () {
                 setState(() {
                   _selectedOption = 'Token Recharge';
+                });
+                Navigator.pop(context); // Close the drawer
+              },
+            ),
+            ListTile(
+              title: Text('Token Share'),
+              onTap: () {
+                setState(() {
+                  _selectedOption = 'Token Share';
                 });
                 Navigator.pop(context); // Close the drawer
               },

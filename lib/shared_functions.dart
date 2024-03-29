@@ -1,8 +1,10 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
-String hostName = 'http://192.168.0.181:5000';
+String hostName = 'https://water.waithakasam.com';
 
 Future<Map<String, String>> _getRequestHeaders() async {
   // Initialize headers with default Content-Type
@@ -28,7 +30,6 @@ Future<Map<String, String>> _getRequestHeaders() async {
   return headers;
 }
 
-
 Future<dynamic> makePostRequest(
     Map<String, dynamic> postData, String endpoint) async {
   String url = '$hostName/api/android$endpoint';
@@ -40,13 +41,18 @@ Future<dynamic> makePostRequest(
       body: jsonEncode(postData),
     );
 
+    Map<String, dynamic> responseBody = jsonDecode(response.body);
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+      showToast(responseBody['message']);
+      return responseBody;
     } else {
-      throw Exception('Failed to post data: ${response.statusCode}');
+      String message = responseBody['message'];
+      showToast(message);
+      throw Exception(message);
     }
   } catch (error) {
-    throw Exception('Failed to post data: $error');
+    // showToast('Failed to post data: $error');
+    throw Exception('$error');
   }
 }
 
@@ -59,12 +65,28 @@ Future<dynamic> makeGETRequest(String endpoint) async {
       headers: await _getRequestHeaders(),
     );
 
+    Map<String, dynamic> responseBody = jsonDecode(response.body);
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+      // showToast(responseBody['message']);
+      return responseBody;
     } else {
+      showToast(responseBody['message']);
       throw Exception('Failed to fetch data: ${response.statusCode}');
     }
   } catch (error) {
+    showToast('Failed to fetch data: $error');
     throw Exception('Failed to fetch data: $error');
   }
+}
+
+void showToast(String message) {
+  Fluttertoast.showToast(
+    msg: message,
+    toastLength: Toast.LENGTH_SHORT,
+    gravity: ToastGravity.BOTTOM,
+    timeInSecForIosWeb: 1,
+    backgroundColor: Colors.black.withOpacity(0.7),
+    textColor: Colors.white,
+    fontSize: 16.0,
+  );
 }

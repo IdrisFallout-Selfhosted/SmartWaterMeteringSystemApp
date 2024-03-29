@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smartwatermeteringsystemapp/shared_functions.dart'; // Assuming you have defined makePostRequest function here
 import 'home_screen.dart'; // Import HomeScreen from home_screen.dart
+import 'LinkAccountScreen.dart'; // Import LinkAccountScreen from LinkAccountScreen.dart
 
 void main() {
   runApp(const MyApp());
@@ -97,13 +98,23 @@ class LoginForm extends StatelessWidget {
         passwordController.clear();
 
         if (response != null && response['responseType'] == 'success') {
-          // Navigate to the next screen if login is successful
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const HomeScreen(),
-            ),
-          );
+          if (response['linkedAccount'] == false) {
+            // Navigate to the LinkAccountScreen if account is not linked
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => LinkAccountScreen(),
+              ),
+            );
+          } else {
+            // Navigate to the HomeScreen if login is successful and account is linked
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const HomeScreen(),
+              ),
+            );
+          }
         } else {
           // Display error message if login is unsuccessful
           showDialog(
@@ -216,3 +227,4 @@ class LoginForm extends StatelessWidget {
     );
   }
 }
+
