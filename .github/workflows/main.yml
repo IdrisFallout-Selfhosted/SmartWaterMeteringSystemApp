@@ -25,18 +25,12 @@ jobs:
       - name: Build APK
         run: flutter build apk --release
 
-      - name: Build Kotlin
-        run: |
-          cd android
-          ./gradlew assembleRelease
-
       - name: Upload APKs
         uses: actions/upload-artifact@v2
         with:
           name: app-releases
           path: |
-            build/app/outputs/flutter-apk/app-release.apk
-            app/build/outputs/apk/release/app-release.apk
+            build/app/outputs/apk/release/app-release.apk
 
       - name: Create Release
         id: create_release
@@ -56,12 +50,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: |
-            build/app/outputs/flutter-apk/app-release.apk
-            app/build/outputs/apk/release/app-release.apk
-          asset_name: |
-            MyApp-flutter-release.apk
-            MyApp-kotlin-release.apk
-          asset_content_type: |
-            application/vnd.android.package-archive
-            application/vnd.android.package-archive
+          asset_path: build/app/outputs/apk/release/app-release.apk
+          asset_name: MyApp-flutter-release.apk
+          asset_content_type: application/vnd.android.package-archive
