@@ -45,6 +45,9 @@ class _ReportsSectionState extends State<ReportsSection> {
 
   @override
   Widget build(BuildContext context) {
+    double screenHeight = MediaQuery.of(context).size.height;
+    double graphHeight = screenHeight * 0.7;
+
     return _isLoading
         ? CircularProgressIndicator() // Show loading indicator while fetching data
         : Column(
@@ -58,27 +61,13 @@ class _ReportsSectionState extends State<ReportsSection> {
         ),
         SizedBox(height: 20),
         _dataPoints.isNotEmpty
-            ? Expanded(
-          child: LineChart(
-            LineChartData(
-              lineBarsData: [
-                LineChartBarData(
-                  spots: _dataPoints
-                      .asMap()
-                      .entries
-                      .map((entry) =>
-                      FlSpot(entry.key.toDouble(), entry.value['volume'].toDouble()))
-                      .toList(),
-                  isCurved: true,
-                  colors: [Color(0xFF4C337B)],
-                  barWidth: 4,
-                  isStrokeCapRound: true,
-                  belowBarData: BarAreaData(
-                    show: false,
-                    colors: [Color(0xFF4C337B).withOpacity(0.3)],
-                  ),
-                ),
-              ],
+            ? Container(
+          height: graphHeight,
+          padding: EdgeInsets.only(right: 16), // Add padding to the right of the graph
+          child: BarChart(
+            BarChartData(
+              alignment: BarChartAlignment.spaceAround,
+              maxY: _calculateMaxY(),
               titlesData: FlTitlesData(
                 bottomTitles: SideTitles(
                   showTitles: true,
@@ -86,22 +75,75 @@ class _ReportsSectionState extends State<ReportsSection> {
                   getTitles: (value) {
                     if (value.toInt() >= 0 && value.toInt() < _dataPoints.length) {
                       final dataPoint = _dataPoints[value.toInt()];
-                      return dataPoint['date'];
+                      // Display every nth date to avoid cluttering
+                      if (value.toInt() % 2 == 0) {
+                        return dataPoint['date'];
+                      } else {
+                        return '';
+                      }
                     }
                     return '';
                   },
+                  rotateAngle: -45, // Rotate labels to prevent overlapping
+                  margin: 8,
                 ),
                 leftTitles: SideTitles(
                   showTitles: true,
                   getTextStyles: (context, value) => const TextStyle(color: Colors.black),
                 ),
               ),
+              gridData: FlGridData(
+                show: true, // Show grid lines
+                horizontalInterval: 1, // Interval between horizontal grid lines
+                verticalInterval: 1, // Interval between vertical grid lines
+                checkToShowHorizontalLine: (value) => value % 1 == 0, // Custom condition to show horizontal grid lines
+                checkToShowVerticalLine: (value) => value % 1 == 0, // Custom condition to show vertical grid lines
+                getDrawingHorizontalLine: (value) => FlLine(
+                  color: Colors.grey, // Color of horizontal grid lines
+                  strokeWidth: 0.5, // Width of horizontal grid lines
+                ),
+                getDrawingVerticalLine: (value) => FlLine(
+                  color: Colors.grey, // Color of vertical grid lines
+                  strokeWidth: 0.5, // Width of vertical grid lines
+                ),
+              ),
               borderData: FlBorderData(show: true),
+              barGroups: _buildBarGroups(),
             ),
           ),
         )
             : SizedBox(), // Show a message if there are no data points
       ],
     );
+  }
+
+  // Calculate the maximum y value for setting the maximum range of the chart
+  double _calculateMaxY() {
+    double maxVolume = 0;
+    for (var dataPoint in _dataPoints) {
+      if (dataPoint['volume'] > maxVolume) {
+        maxVolume = dataPoint['volume'];
+      }
+    }
+    return maxVolume * 1.2; // Add some padding to the maximum y value
+  }
+
+  // Build Bar Chart Groups from data points
+  List<BarChartGroupData> _buildBarGroups() {
+    return _dataPoints
+        .asMap()
+        .entries
+        .map(
+          (entry) => BarChartGroupData(
+        x: entry.key,
+        barRods: [
+          BarChartRodData(
+            y: entry.value['volume'].toDouble(),
+            colors: [Color(0xFF4C337B)],
+          ),
+        ],
+      ),
+    )
+        .toList();
   }
 }
