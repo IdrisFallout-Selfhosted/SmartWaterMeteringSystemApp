@@ -51,5 +51,5 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: build/app/outputs/apk/release/app-release.apk
-          asset_name: MyApp-flutter-release.apk
+          asset_name: machakos_waters.apk
           asset_content_type: application/vnd.android.package-archive
