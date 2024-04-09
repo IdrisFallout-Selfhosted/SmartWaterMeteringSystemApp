@@ -1,0 +1,64 @@
+name: Semantic Release APK
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.16.5' # Update with your Flutter version
+
+      - name: Install Semantic Release
+        run: npm install -g semantic-release @semantic-release/{git,exec}
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Determine version and release
+        id: semantic_release
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        run: |
+          npx semantic-release --dry-run
+
+      - name: Generate APK
+        run: flutter build apk --release
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v2
+        with:
+          name: app-release
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        with:
+          tag_name: ${{ steps.semantic_release.outputs.version }}
+          release_name: Release ${{ steps.semantic_release.outputs.version }}
+          draft: false
+          prerelease: false
+
+      - name: Upload APK to Release
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: build/app/outputs/flutter-apk/app-release.apk
+          asset_name: MyApp-${{ steps.semantic_release.outputs.version }}.apk
+          asset_content_type: application/vnd.android.package-archive
