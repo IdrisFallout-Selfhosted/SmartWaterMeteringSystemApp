@@ -17,7 +17,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.16.5' # Update with your Flutter version
+          flutter-version: '3.16.5'
 
       - name: Install dependencies
         run: flutter pub get
@@ -35,8 +35,8 @@ jobs:
         with:
           name: app-releases
           path: |
-            build/app/outputs/flutter-apk/app-release.apk # Path to your Flutter APK
-            app/build/outputs/apk/release/app-release.apk # Path to your Kotlin APK
+            build/app/outputs/flutter-apk/app-release.apk
+            app/build/outputs/apk/release/app-release.apk
 
       - name: Create Release
         id: create_release
@@ -57,11 +57,11 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: |
-            build/app/outputs/flutter-apk/app-release.apk # Path to your Flutter APK
-            app/build/outputs/apk/release/app-release.apk # Path to your Kotlin APK
+            build/app/outputs/flutter-apk/app-release.apk
+            app/build/outputs/apk/release/app-release.apk
           asset_name: |
-            MyApp-flutter-release.apk # Name of your Flutter APK
-            MyApp-kotlin-release.apk # Name of your Kotlin APK
+            MyApp-flutter-release.apk
+            MyApp-kotlin-release.apk
           asset_content_type: |
             application/vnd.android.package-archive
             application/vnd.android.package-archive
