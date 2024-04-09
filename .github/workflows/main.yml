@@ -1,4 +1,4 @@
-name: Semantic Release APK
+name: Release APK
 
 on:
   push:
@@ -7,44 +7,36 @@ on:
       - master
 
 jobs:
-  release:
+  build:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Install Node.js 20.8.1
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20.8.1'
-
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.16.5' # Update with your Flutter version
 
-      - name: Install Semantic Release
-        run: npm install -g semantic-release @semantic-release/{git,exec}
-
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Determine version and release
-        id: semantic_release
-        env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
-        run: |
-          npx semantic-release --dry-run
-
-      - name: Generate APK
+      - name: Build APK
         run: flutter build apk --release
 
-      - name: Upload APK
+      - name: Build Kotlin
+        run: |
+          cd android
+          ./gradlew assembleRelease
+
+      - name: Upload APKs
         uses: actions/upload-artifact@v2
         with:
-          name: app-release
-          path: build/app/outputs/flutter-apk/app-release.apk
+          name: app-releases
+          path: |
+            build/app/outputs/flutter-apk/app-release.apk # Path to your Flutter APK
+            app/build/outputs/apk/release/app-release.apk # Path to your Kotlin APK
 
       - name: Create Release
         id: create_release
@@ -52,18 +44,24 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
         with:
-          tag_name: ${{ steps.semantic_release.outputs.version }}
-          release_name: Release ${{ steps.semantic_release.outputs.version }}
+          tag_name: v${{ github.run_number }}
+          release_name: Release ${{ github.run_number }}
           draft: false
           prerelease: false
 
-      - name: Upload APK to Release
+      - name: Upload APKs to Release
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: build/app/outputs/flutter-apk/app-release.apk
-          asset_name: MyApp-${{ steps.semantic_release.outputs.version }}.apk
-          asset_content_type: application/vnd.android.package-archive
+          asset_path: |
+            build/app/outputs/flutter-apk/app-release.apk # Path to your Flutter APK
+            app/build/outputs/apk/release/app-release.apk # Path to your Kotlin APK
+          asset_name: |
+            MyApp-flutter-release.apk # Name of your Flutter APK
+            MyApp-kotlin-release.apk # Name of your Kotlin APK
+          asset_content_type: |
+            application/vnd.android.package-archive
+            application/vnd.android.package-archive
