@@ -14,10 +14,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Setup Node.js
+      - name: Install Node.js 20.8.1
         uses: actions/setup-node@v3
         with:
-          node-version: '14'
+          node-version: '20.8.1'
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -67,8 +67,3 @@ jobs:
           asset_path: build/app/outputs/flutter-apk/app-release.apk
           asset_name: MyApp-${{ steps.semantic_release.outputs.version }}.apk
           asset_content_type: application/vnd.android.package-archive
-
-      # Skip the git push step if running in dry-run mode
-      - name: Push changes (if not dry-run)
-        if: ${{ steps.semantic_release.outputs.dryRun == 'false' }}
-        run: git push
