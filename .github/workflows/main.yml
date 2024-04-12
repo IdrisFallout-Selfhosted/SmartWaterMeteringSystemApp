@@ -48,14 +48,18 @@ jobs:
           path: |
             build/app/outputs/flutter-apk/app-release.apk
 
+      - name: Extract Year and Month
+        id: extract_year_month
+        run: echo "::set-output name=year_month::$(date +'%Y.%m')"
+
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
         with:
-          tag_name: v${{ github.run_number }}-${{ formatTime(now(), 'YYYY.MM') }}
-          release_name: Release ${{ github.run_number }} (${{ formatTime(now(), 'YYYY.MM') }})
+          tag_name: v${{ github.run_number }}-${{ steps.extract_year_month.outputs.year_month }}
+          release_name: Release ${{ github.run_number }} (${{ steps.extract_year_month.outputs.year_month }})
           draft: false
           prerelease: false
 
